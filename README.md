@@ -9,6 +9,8 @@ Intialize Error reporting and attribute confirmation - initialize will only run 
 
 Conditional Routing - Form Ranger add-on for the forms can be used to populate fields that trigger conditional routing, will write an extension to the intialize function to create a separate sheet to specify value/email pairs which can than be used via form ranger to dynamically manage drop down lists
 
+Move script attributes to config sheet - update initialize function to harvest global attributes from a config sheet rather than sheet property attributes, more human centric workflow creation
+
 Google Sites Dashboards - Dashboards to monitor workflows and eroors.
 
 Bulk email workflow - A tracking workflow type to create extra sheets within the responses sheet linking to dashboards to track acceptance and progress of staff initiated form campaigns.
