@@ -7,6 +7,8 @@ Function Roadmap:
 
 Intialize Error reporting and attribute confirmation - initialize will only run once all attributes are set and will feedback the desired option, also have a 'reset form' option.
 
+Log sheet becomes Admin sheet - central function library to have an install function to create and lock down an Admin sheet in place of a log sheet which will contain central logs as well as a form register. Form initialisations will auto update the Admin form inventory with their urls, pending jobs, Workflow type, error count and script versions. New script versions can be pushed to forms via this Admin sheet form inventory. 
+
 RowID expansion - include both timestamp and email address as identifiers for row ID.
 
 Conditional Routing - Form Ranger add-on for the forms can be used to populate fields that trigger conditional routing, will write an extension to the intialize function to create a separate sheet to specify value/email pairs which can than be used via form ranger to dynamically manage drop down lists, separate sheet will eventually become a 'config' sheet
@@ -26,6 +28,8 @@ Google Sites Dashboards - Dashboards to monitor workflows and eroors.
 Subsheet form metrics - Dasbhoard as a subsheet within the response form for tracking metrics.
 
 Bulk email workflow - A tracking workflow type to create extra sheets within the responses sheet linking to dashboards to track acceptance and progress of staff initiated form campaigns.
+
+Google Form extension - form Workflow installation and setup pushed to a Google form extension so form creators don't need to edit code or sheet config - user centric function. Eventually push logs and form config to json attached to Admin form. 
 
 Contributor workflow - create email form input fields harvested into an a href get request to the web app where extra input
 
