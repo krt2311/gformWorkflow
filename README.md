@@ -21,6 +21,8 @@ Email confirmation workflow - for forms intended for use outside of google apps 
 
 Google Sites Dashboards - Dashboards to monitor workflows and eroors.
 
+Subsheet form metrics - Dasbhoard as a subsheet within the response form for tracking metrics.
+
 Bulk email workflow - A tracking workflow type to create extra sheets within the responses sheet linking to dashboards to track acceptance and progress of staff initiated form campaigns.
 
 Contributor workflow - create email form input fields harvested into an a href get request to the web app where extra input
