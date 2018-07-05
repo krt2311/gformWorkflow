@@ -16,3 +16,5 @@ Bulk email workflow - A tracking workflow type to create extra sheets within the
 Single and Double approval workflow - change approval email generation to use doGet as most mobile mail clients don't support HTML forms. Create custom final acceptance / rejection emails to the form initiator once the workflow is complete.
 
 Contribution workflow - create email form input fields harvested into an a href get request to the web app where extra input
+
+HR System integration - update subsheet data with HR system data... feedback into HR system would most likely require node dev though, at first would only facilitate data extraction
