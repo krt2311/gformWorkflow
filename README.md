@@ -7,6 +7,8 @@ Function Roadmap:
 
 Intialize Error reporting and attribute confirmation - initialize will only run once all attributes are set and will feedback the desired option, also have a 'reset form' option.
 
+RowID expansion - include both timestamp and email address as identifiers for row ID.
+
 Conditional Routing - Form Ranger add-on for the forms can be used to populate fields that trigger conditional routing, will write an extension to the intialize function to create a separate sheet to specify value/email pairs which can than be used via form ranger to dynamically manage drop down lists, separate sheet will eventually become a 'config' sheet
 
 Single and Double approval workflow - change approval email generation to use doGet as most mobile mail clients don't support HTML forms. Create custom final acceptance / rejection emails to the form initiator once the workflow is complete. Lock approval cells and workflow upon workflow completeion.
