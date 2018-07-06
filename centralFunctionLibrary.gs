@@ -109,7 +109,7 @@ function passFormDataToHTML(e,columns) {
 // Returns HTML buttons within a table to approve/deny row data
 // Requires a 'recordID' (such as timestamp), a 'docID' as google sheet GUID for writing back to, an 'initID' as the email of the initiating email
 // and 'data' as an array of key value pairs (must include 'source' and recipient email pair)
-function approvalButtons(recordID, docID, webappID, initID, approvalSource, data) {
+function approvalPostButtons(recordID, docID, webappID, initID, approvalSource, data) {
   var result;
   result = "<table width=\"100%\"><tr>";
   
@@ -136,6 +136,43 @@ function approvalButtons(recordID, docID, webappID, initID, approvalSource, data
   result += "</tr></table>";
   return result;
 }
+
+// Returns HTML buttons within a table to approve/deny row data
+// Requires a 'recordID' (such as timestamp), a 'docID' as google sheet GUID for writing back to, an 'initID' as the email of the initiating email
+// and 'data' as an array of key value pairs (must include 'source' and recipient email pair)
+function approvalGetButtons(recordID, docID, webappID, initID, approvalSource, data) {
+  var result;
+  result = "<table width=\"100%\"><tr>";
+  
+  // Approve button
+  result += "<td style=\"text-align: right; padding-right: 5px; padding-left: 5px;\">";
+  result += "<a href=\"" + webappID + "exec?";
+  
+  // Add html get variables to parse for Approve
+  result += "approve=true";
+  result += "&recordID=" + recordID;
+  result += "&docID=" + docID;
+  result += "&initID=" + initID;
+  result += "&approvalSource=" + approvalSource;
+  result += "\" onMouseOver=\"this.style.background='#66CD00'\" onMouseOut=\"this.style.background='#61B329'\" style=\"text-decoration:none; color: #ffffff; background: #61B329; font-family: sans-serif; font-size: 20px; text-align: center; padding-top:10px;padding-bottom:10px;padding-right:20px;padding-left:20px;\">Approve</a></td>";
+  
+  // Deny Button
+  result += "<td style=\"text-align: left; padding-right: 5px; padding-left: 5px;\">";
+  result += "<a href=\"" + webappID + "exec?";
+  
+  // Add html get variables to parse for Deny
+  result += "approve=false";
+  result += "&recordID=" + recordID;
+  result += "&docID=" + docID;
+  result += "&initID=" + initID;
+  result += "&approvalSource=" + approvalSource;
+  result += "\" onMouseOver=\"this.style.background='#F80000'\" onMouseOut=\"this.style.background='#D00000'\" style=\"text-decoration:none; color: #ffffff; background: #D00000; font-family: sans-serif; font-size: 20px; text-align: center; padding-top:10px;padding-bottom:10px;padding-right:35px;padding-left:35px;\">Deny</a></td>";												
+  
+  // Buttons EOF
+  result += "</tr></table>";
+  return result;
+}
+
 
 function genConfTable(formCommsName, approvalClause) {
   var confTable = "<table width=\"100%\"><tr>";
