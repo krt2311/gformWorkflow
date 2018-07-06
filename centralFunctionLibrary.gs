@@ -12,6 +12,9 @@ PropertiesService.getScriptProperties().setProperty('approveImg', 'https://s3-ap
 // Deny Graphic
 PropertiesService.getScriptProperties().setProperty('denyImg', 'https://s3-ap-southeast-2.amazonaws.com/danebank-cdn/email-confirmations-graphics/ThumbsDown.jpg');
 
+// Pending Graphic
+PropertiesService.getScriptProperties().setProperty('pendingImg', 'https://s3-ap-southeast-2.amazonaws.com/danebank-cdn/email-confirmations-graphics/Pending.jpg');
+
 // Helpdesk / support email address
 PropertiesService.getScriptProperties().setProperty('supportEmail', 'helpdesk@danebank.nsw.edu.au');
 
@@ -183,6 +186,23 @@ function approvalGetButtons(recordID, docID, webappID, initID, approvalSource, d
   return result;
 }
 
+function approvalStatusButton(recordID, docID, webappID, initID, approvalSource, data) {
+  var result;
+  result = "<table width=\"100%\"><tr>";
+  
+  // Check Status button
+  result += "<td style=\"text-align: center; padding-right: 5px; padding-left: 5px; padding-top: 5px;\">";
+  result += "<a href=\"" + webappID;
+  result += "?approve=status";
+  result += "&recordID=" + recordID;
+  result += "&docID=" + docID;
+  result += "&initID=" + initID;
+  result += "&approvalSource=" + initID;
+  result += "\" onMouseOver=\"this.style.background='darkorange'\" onMouseOut=\"this.style.background='orange'\" style=\"text-decoration:none; color: #ffffff; background: orange; font-family: sans-serif; font-size: 20px; text-align: center; padding-top:10px;padding-bottom:10px;padding-right:35px;padding-left:35px;\">Check Status</a></td>";
+  result += "</tr></table>";
+  return result;
+}
+
 // Returns a table for an HTML confirmation message
 function genConfTable(formCommsName, approvalClause) {
   var confTable = "<table width=\"100%\"><tr>";
@@ -215,6 +235,36 @@ function getThankYouPage(approve, formCommsName) {
   thankYouHTML += "<p style=\"font-size: 24px;\">Having trouble? <a href=\"mailto:" + supportEmail + "?subject=Problem with Form Approval/Denial from " + formCommsName + "\" target=\"_blank\">Contact the helpdesk</a></p>";
   thankYouHTML += "</td></tr></table>";
   return thankYouHTML;
+}
+
+// Returns a status page for users to check on their submission's workflow status
+function getStatusPage(status, formCommsName) {
+  var supportEmail = PropertiesService.getScriptProperties().getProperty('supportEmail');
+  var statusColour, statusImg;
+  switch (status)
+  {
+    case "Completed - Approved":  
+      statusColour = "green";
+      statusImg = PropertiesService.getScriptProperties().getProperty('approveImg');
+      break;
+    case "Completed - Denied":
+      statusColour = "red";
+      statusImg = PropertiesService.getScriptProperties().getProperty('denyImg');
+      break;
+    default:
+      statusColour = "orange";
+      statusImg = PropertiesService.getScriptProperties().getProperty('pendingImg');
+      break;
+  }
+  var statusHTML = "<table width=\"100%\" height=\"100%\"><tr>";
+  statusHTML += "<td style=\"vertical-align: top; text-align: center; color: gray; font-family: sans-serif;\"><br><br><br><br>";
+  statusHTML += "<img src=\"" + statusImg + "\"></img>";
+  statusHTML += "<p style=\"font-size: 40px;\">Your <strong>" + formCommsName + "</strong> submission status:</p>";
+  statusHTML += "<p style=\"font-size: 40px;\"><strong style=\"Color: " + statusColour + ";\">" + status + "</strong></p>";
+  statusHTML += "<p style=\"font-size: 24px;\"><strong>Please contact the appropriate party</strong> for further information.</p><p ><hr width=\"60%\"></p>";
+  statusHTML += "<p style=\"font-size: 24px;\">Having trouble? <a href=\"mailto:" + supportEmail + "?subject=Problem with Form Approval/Denial from " + formCommsName + "\" target=\"_blank\">Contact the helpdesk</a></p>";
+  statusHTML += "</td></tr></table>";
+  return statusHTML;
 }
 
 function getWorkflowName(workflowType) {
