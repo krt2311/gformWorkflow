@@ -17,7 +17,7 @@ PropertiesService.getScriptProperties().setProperty('formCommsName', 'Profession
 PropertiesService.getScriptProperties().setProperty('senderMask', 'Danebank Forms');
 
 // A clause for confirmation emails to workflow initiators where there is an approval process involved, will be ignored in a non approval workflow
-PropertiesService.getScriptProperties().setProperty('approvalClause', '<i>You will be notified of the outcome via an automated email once your submission has been reviewed</i>');
+PropertiesService.getScriptProperties().setProperty('approvalClause', 'You will be notified of the outcome via an automated email once your submission has been reviewed');
 
 // A clause to go in the footer of email correspondence
 PropertiesService.getScriptProperties().setProperty('footerClause', 'This data is confidential and must be used with discretion.<br>If you are having any trouble with this email please contact helpdesk@danebank.nsw.edu.au'); 
@@ -41,7 +41,7 @@ function Initialize() {
 
 function woah(e) {
   var testURL = SpreadsheetApp.getActiveSpreadsheet().getUrl();
-  var testURL2 = ScriptApp.getService().getUrl(); 
+  var testURL2 = ScriptApp.getService().getUrl();
   var timestamp = e.parameter.recordID;
 }
 
@@ -53,21 +53,27 @@ function woah(e) {
 // !! ATN Once final approval has been submitted don't write any more approval/denials
 function doGet(e) {
   // Log the workflow intiation
-  try { cfl.logSheet("Approval workflow initiated from account " + e.parameter.source,1); }
+  try { 
+    if (e.parameter.approvalSource == "undefined") { cfl.logSheet("Approval workflow initiated , could not read initiating account",2); }
+    else { cfl.logSheet("Approval workflow initiated from account " + e.parameter.approvalSource,1); }
+  }
   catch(er1) { cfl.logSheet("Approval workflow initiated , could not read initiating account - " + er1,2); }
   
   // Main process
   try {
     // Passed Paramaters into variables
-    var initiatorEmail = e.parameter.initID;
     var approved = e.parameter.approve;
     var timestamp = e.parameter.recordID;
     var ssid = e.parameter.docID;
-    var approvalSource = e.parameter.source;
+    var initiatorEmail = e.parameter.initID;
+    var approvalSource = e.parameter.approvalSource;
+    
+    // Catch missing http get paramaters
     if (approved == "undefined" || timestamp == "undefined" || ssid == "undefined" || approvalSource == "undefined" || initiatorEmail == "undefined") { cfl.logSheet("Paramaters not passed correctly from approval email.",2); }
     else { timestamp = timestamp.replace("%20", " "); }
     
     // Spreadsheet variables
+    var formCommsName = PropertiesService.getScriptProperties().getProperty('formCommsName');
     var ss2 = SpreadsheetApp.openById(ssid);
     var sheet = ss2.getActiveSheet();
     var lastCol = sheet.getLastColumn();
@@ -82,9 +88,10 @@ function doGet(e) {
     
     // Write to Google Sheet and logs and return HTML page
     sheet.getRange(approvalRow,approvalColumn).setValue(approvalText).setFontWeight("bold").setHorizontalAlignment("center").setFontColor(approvalColour); // Approval Cell
-    sheet.getRange(approvalRow,approvalByColumn).setValue(approvalSource + " on " + new Date()).setFontWeight("normal").setHorizontalAlignment("left").setFontColor("gray"); // Approved By Cell
+    sheet.getRange(approvalRow,approvalByColumn).setValue(approvalSource + " on " + new Date()).setFontWeight("normal").setHorizontalAlignment("left").setFontColor("gray").setWrapStrategy(SpreadsheetApp.WrapStrategy.CLIP); // Approved By Cell
     cfl.logSheet("Approval workflow completed successfully from " + approvalSource + " with results: Approved: " + approved + " approvalRow: " + approvalRow,1);
-    return ContentService.createTextOutput("We found the ID: " + timestamp + " DocID: " + ssid + " Approved: " + approved + " approvalRow: " + approvalRow); // !!ATN add a nice HTML thank you page here for approve or deny
+    //return ContentService.createTextOutput("We found the ID: " + timestamp + " DocID: " + ssid + " Approved: " + approved + " approvalRow: " + approvalRow);
+    return HtmlService.createHtmlOutput(cfl.getThankYouPage(approved, formCommsName));
   }
   catch(er2) {
     // Error Actions
@@ -146,16 +153,16 @@ function SendWorkflowMail(e,workflowStage) {
       var rowID = timestamp;
       var targetFormID = SpreadsheetApp.getActiveSpreadsheet().getId(); // the GUID of the attached google sheet
       var webAppID = ScriptApp.getService().getUrl();
-      var approvalArray = ["source",recipient]; // extra varaibles to send to HTML email form for approval
-      bodyButtons = cfl.approvalButtons(rowID, targetFormID, webAppID, initiatorEmail, recipient, approvalArray);
+      var approvalArray = ["",""]; // extra varaibles can be sent to HTML email form if necessary
+      bodyButtons = cfl.approvalGetButtons(rowID, targetFormID, webAppID, initiatorEmail, recipient, approvalArray);
       pendingApprovalText = " - Pending Approval";
       subjectApprovalText = "Action Required - Approval - ";
-      headerApprovalText = "<strong>Awaiting your approval - </strong>";
+      headerApprovalText = "<strong>Awaiting your approval</strong><br>";
       approvalClause = "<br>" + PropertiesService.getScriptProperties().getProperty('approvalClause');
     }
         
     // Variables to replace HTML email code blacks
-    var headerBlock = headerApprovalText + formCommsName + "<br>Submitted by " + initiatorName;
+    var headerBlock = headerApprovalText + formCommsName + " submitted by " + initiatorName;
     var bodyInit = "<div style=\"text-align: center; color: gray;\">The following " + formCommsName + " has been submitted:</div>";
     var bodyBlock = bodyInit + cfl.passFormDataToHTML(e,columns) + bodyButtons;
     var footerBlock = PropertiesService.getScriptProperties().getProperty('footerClause');
