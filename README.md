@@ -5,7 +5,7 @@ This script is dependant on the central function library being pulled into it's 
 
 Function Roadmap:
 
-Check status of Submission - add a link to allow a HTML page response showing the approval status of an application from the intial confirmation email where approve=status on http get
+DONE - Check status of Submission - add a link to allow a HTML page response showing the approval status of an application from the intial confirmation email where approve=status on http get
 
 Intialize Error reporting and attribute confirmation - initialize will only run once all attributes are set and will feedback the desired option, also have a 'reset form' option.
 
