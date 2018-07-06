@@ -28,6 +28,12 @@ PropertiesService.getScriptProperties().setProperty('footerClause', 'This data i
 // 3 = Double Approval (Sequential approval workflows)
 PropertiesService.getScriptProperties().setProperty('workflowType', 3);
 
+// The wording of the stage 1 approval pending status [optional]
+PropertiesService.getScriptProperties().setProperty('stage1Status', 'Pending Approval from Head of Department');
+
+// The wording of the stage 2 approval pending status [optional]
+PropertiesService.getScriptProperties().setProperty('stage2Status', 'Pending Approval from Executive Staff');
+
 /* ----- End of global script attributes ----- */
 /* ------------------------------------------- */
 
@@ -52,12 +58,14 @@ function woah(e) {
 // eg https://script.google.com/a/danebank.nsw.edu.au/macros/s/AKfycbxNW0wajUzlk9vLJx2y3TOxSjLS1owVQ85R0mD9fxcOqD8r3sUC/exec?approve=true&recordID=02/07/2018%2015:33:01&docID=1FcipTdTYpwC_zM_cD6Fgu5XQKQXK1zZmxMydaXtwgRA&initID=kevin.turner@danebank.nsw.edu.au&source=kevin.turner@danebank.nsw.edu.au
 // !! ATN Once final approval has been submitted don't write any more approval/denials
 function doGet(e) {
-  // Log the workflow intiation
-  try { 
-    if (e.parameter.approvalSource == "undefined") { cfl.logSheet("Approval workflow initiated , could not read initiating account",2); }
-    else { cfl.logSheet("Approval workflow initiated from account " + e.parameter.approvalSource,1); }
+  // Log the workflow intiation except for status checks
+  if (e.parameter.approve != "status") {
+    try { 
+      if (e.parameter.approvalSource == "undefined" || e.parameter.approvalSource == "") { cfl.logSheet("Approval workflow initiated , could not read initiating account",2); }
+      else { cfl.logSheet("Approval workflow initiated from account " + e.parameter.approvalSource,1); }
+    }
+    catch(er1) { cfl.logSheet("Approval workflow initiated , could not read initiating account - " + er1,2); }
   }
-  catch(er1) { cfl.logSheet("Approval workflow initiated , could not read initiating account - " + er1,2); }
   
   // Main process
   try {
@@ -86,7 +94,15 @@ function doGet(e) {
     var approvalRow = cfl.getRowID(sheetData, timestamp, lastRow); // Find row of timestamp (the associated record ID for approval)
     if(approvalRow == "unknown") { cfl.logSheet("Could not find associated record for approval workflow.",2); } // Throw error to log if record not found
     
-    // Write to Google Sheet and logs and return HTML page
+    // Return an HTML status page if the request is for a status update
+    if (approved == "status") { 
+      var workflowCol = cfl.getWorkflowColumn(sheetData, "Workflow Status", lastCol);
+      var status = sheetData [approvalRow-1][workflowCol-1];
+      var statusPage = cfl.getStatusPage(status, formCommsName);
+      return HtmlService.createHtmlOutput(statusPage);
+    } 
+    
+    // Write to Google Sheet and logs and return HTML thank you page
     sheet.getRange(approvalRow,approvalColumn).setValue(approvalText).setFontWeight("bold").setHorizontalAlignment("center").setFontColor(approvalColour); // Approval Cell
     sheet.getRange(approvalRow,approvalByColumn).setValue(approvalSource + " on " + new Date()).setFontWeight("normal").setHorizontalAlignment("left").setFontColor("gray").setWrapStrategy(SpreadsheetApp.WrapStrategy.CLIP); // Approved By Cell
     cfl.logSheet("Approval workflow completed successfully from " + approvalSource + " with results: Approved: " + approved + " approvalRow: " + approvalRow,1);
@@ -130,6 +146,7 @@ function SendWorkflowMail(e,workflowStage) {
     var sheetData = sheet.getDataRange().getDisplayValues();
     var emailSentColumn = cfl.getWorkflowColumn(sheetData,"Email Sent",lastCol);
     var confEmailColumn = cfl.getWorkflowColumn(sheetData,"Confirmation Sent",lastCol);
+    var workflowColumn = cfl.getWorkflowColumn(sheetData,"Workflow Status",lastCol);
  
     // !!ATN NEED IF STATEMENT FOR STAGE
     
@@ -142,7 +159,7 @@ function SendWorkflowMail(e,workflowStage) {
     else { initiatorName = e.namedValues["First Name"].toString() + " " + e.namedValues["Surname"].toString(); }
     var subject = formCommsName + " from " + initiatorName;
     var timestamp = e.namedValues["Timestamp"].toString();
-    var pendingApprovalText = "", subjectApprovalText = "", headerApprovalText = "", bodyButtons = "", approvalClause = ""; // Approval workflow variables, will remain blank unless approval workflow catch is triggered
+    var pendingApprovalText = "", subjectApprovalText = "", headerApprovalText = "", bodyButtons = "", approvalClause = "", approvalStatusButton = ""; // Approval workflow variables, will remain blank unless approval workflow catch is triggered
     
     // Conditional area for recipients
     var recipient = "kevin.turner@danebank.nsw.edu.au";
@@ -155,6 +172,7 @@ function SendWorkflowMail(e,workflowStage) {
       var webAppID = ScriptApp.getService().getUrl();
       var approvalArray = ["",""]; // extra varaibles can be sent to HTML email form if necessary
       bodyButtons = cfl.approvalGetButtons(rowID, targetFormID, webAppID, initiatorEmail, recipient, approvalArray);
+      approvalStatusButton = cfl.approvalStatusButton(rowID, targetFormID, webAppID, initiatorEmail, initiatorEmail, approvalArray);
       pendingApprovalText = " - Pending Approval";
       subjectApprovalText = "Action Required - Approval - ";
       headerApprovalText = "<strong>Awaiting your approval</strong><br>";
@@ -190,7 +208,7 @@ function SendWorkflowMail(e,workflowStage) {
     
     // Confirmation column and receipt email to form intiator
     subject = "Your " + formCommsName + " has been submitted" + pendingApprovalText;
-    messageHTML = messageHTML.replace(headerBlock, "Submitted details - " + formCommsName + pendingApprovalText);
+    messageHTML = messageHTML.replace(headerBlock, "<label style=\"color: white;\">Submitted details - " + formCommsName + "</label>" + approvalStatusButton);
     messageHTML = messageHTML.replace(bodyBlock, cfl.genConfTable(formCommsName, approvalClause) + bodyBlock);
     messageHTML = messageHTML.replace(bodyInit, "");
     if (workFlowType > 1) { 
@@ -200,7 +218,11 @@ function SendWorkflowMail(e,workflowStage) {
     textbody = messageHTML.replace("<br>", "\n");
     GmailApp.sendEmail(initiatorEmail, subject, textbody, { name: senderName, htmlBody: messageHTML });
     sheet.getRange(lastRow,confEmailColumn).setValue("Receipt sent to: " + initiatorEmail + " on " + new Date()).setFontWeight("normal").setFontColor("gray");  
-    cfl.logSheet("Confirmation Email sent to " + initiatorEmail,1); 
+    cfl.logSheet("Confirmation Email sent to " + initiatorEmail,1);
+    
+    // !!ATN Need additional conditions for work stage and workflow type
+    if (workFlowType > 1 ) { sheet.getRange(lastRow,workflowColumn).setValue(PropertiesService.getScriptProperties().getProperty('stage1Status')).setFontWeight("bold").setHorizontalAlignment("center").setFontColor("orange"); }
+    else { sheet.getRange(lastRow,workflowColumn).setValue("Completed").setFontWeight("bold").setHorizontalAlignment("center").setFontColor("green"); }
     
     // !!ATN If final approval, need to send confirmation to initiator to say their x has been approved
     
