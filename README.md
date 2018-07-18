@@ -7,6 +7,8 @@ Function Roadmap:
 
 DONE - Check status of Submission - add a link to allow a HTML page response showing the approval status of an application from the intial confirmation email where approve=status on http get
 
+Add cancel button on confirmation email receipt to cancel applications.
+
 Intialize Error reporting and attribute confirmation - initialize will only run once all attributes are set and will feedback the desired option, also have a 'reset form' option.
 
 Log sheet becomes Admin sheet - central function library to have an install function to create and lock down an Admin sheet in place of a log sheet which will contain central logs as well as a form register. Form initialisations will auto update the Admin form inventory with their urls, pending jobs, Workflow type, error count and script versions. New script versions can be pushed to forms via this Admin sheet form inventory. 
