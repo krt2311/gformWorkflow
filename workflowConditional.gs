@@ -37,7 +37,7 @@ PropertiesService.getScriptProperties().setProperty('stage1Status', 'Pending App
 // The wording of the stage 2 approval pending status [optional]
 PropertiesService.getScriptProperties().setProperty('stage2Status', 'Pending Approval from Executive Staff');
 
-// ** Conditional Workflow Properties **
+// ** Conditional Workflow Properties ** THIS FORM DOESN'T HAVE CONDITIONAL RECIPIENTS
 PropertiesService.getScriptProperties().setProperty('conditionalColumn1', 'Please tick the box for the activity(s) you wish to enroll for.');
 
 /* ----- End of global script attributes ----- */
@@ -167,14 +167,9 @@ function SendWorkflowMail(e,workflowStage) {
     var timestamp = e.namedValues["Timestamp"].toString();
     var pendingApprovalText = "", subjectApprovalText = "", headerApprovalText = "", bodyButtons = "", approvalClause = "", approvalStatusButton = ""; // Approval workflow variables, will remain blank unless approval workflow catch is triggered
     
-    // Conditional area for recipients
+    // Conditional area for recipients NO CONDITIONAL ON THIS FORM
     recipient = "swimming@danebank.nsw.edu.au";
     // cc = "email1@school.nsw.edu.au; email2@school.nsw.edu.au";
-    // if (e.namedValues[PropertiesService.getScriptProperties().getProperty('conditionalColumn1').toString()].toString().indexOf("Tennis") > -1) { recipient += "kevin.turner@danebank.nsw.edu.au; "; }
-    // if (e.namedValues[PropertiesService.getScriptProperties().getProperty('conditionalColumn1').toString()].toString().indexOf("Gymnastics") > -1) { recipient += "kevturnermail@gmail.com; "; }
-    // cfl.logSheet(PropertiesService.getScriptProperties().getProperty('conditionalColumn1').toString(),2);
-    // cfl.logSheet(e.namedValues[PropertiesService.getScriptProperties().getProperty('conditionalColumn1').toString()].toString().indexOf("Tennis"),2);
-    // cfl.logSheet(e.namedValues[PropertiesService.getScriptProperties().getProperty('conditionalColumn1').toString()].toString().indexOf("Gymnastics"),2);
     
     // Approval Workflow trigger
     if (workFlowType > 1 ) {
@@ -192,7 +187,7 @@ function SendWorkflowMail(e,workflowStage) {
         
     // Variables to replace HTML email code blacks
     var headerBlock = headerApprovalText + formCommsName + " submitted by " + initiatorName;
-    var bodyInit = "<div style=\"text-align: center; color: gray;\">The following " + formCommsName + " has been submitted:</div>";
+    var bodyInit = "<div style=\"text-align: center; color: silver;\">The following " + formCommsName + " has been submitted:</div>";
     var bodyBlock = bodyInit + cfl.passFormDataToHTML(e,columns) + bodyButtons;
     var footerBlock = PropertiesService.getScriptProperties().getProperty('footerClause');
     cfl.logSheet("Processed form data from " + initiatorEmail,1);
@@ -219,7 +214,7 @@ function SendWorkflowMail(e,workflowStage) {
     
     // Confirmation column and receipt email to form intiator
     subject = "Your " + formCommsName + " has been submitted" + pendingApprovalText;
-    messageHTML = messageHTML.replace(headerBlock, "<label style=\"color: white;\">Submitted details - " + formCommsName + "</label>" + approvalStatusButton);
+    messageHTML = messageHTML.replace(headerBlock, "<label style=\"color: black;\">Submitted details - " + formCommsName + "</label>" + approvalStatusButton);
     messageHTML = messageHTML.replace(bodyBlock, cfl.genConfTable(formCommsName, approvalClause) + bodyBlock);
     messageHTML = messageHTML.replace(bodyInit, "");
     if (workFlowType > 1) { 
